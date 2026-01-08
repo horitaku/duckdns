@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -73,15 +74,19 @@ func validateConfig(config *Config) error {
 }
 
 func updateDuckDNS(config *Config) error {
-	// Build the URL
-	url := fmt.Sprintf("%s?domains=%s&token=%s", duckDNSURL, config.Domain, config.Token)
+	// Build the URL with properly escaped parameters
+	requestURL := fmt.Sprintf("%s?domains=%s&token=%s", 
+		duckDNSURL, 
+		url.QueryEscape(config.Domain), 
+		url.QueryEscape(config.Token))
 	
 	if config.IP != "" {
-		url += fmt.Sprintf("&ip=%s", config.IP)
+		requestURL += fmt.Sprintf("&ip=%s", url.QueryEscape(config.IP))
 	}
 
 	if config.Verbose {
 		fmt.Printf("Sending request to DuckDNS...\n")
+		fmt.Printf("Domain: %s\n", config.Domain)
 		if config.IP != "" {
 			fmt.Printf("Setting IP to: %s\n", config.IP)
 		} else {
@@ -95,7 +100,7 @@ func updateDuckDNS(config *Config) error {
 	}
 
 	// Send the request
-	resp, err := client.Get(url)
+	resp, err := client.Get(requestURL)
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)
 	}
