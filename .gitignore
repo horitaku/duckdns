@@ -1,5 +1,5 @@
 # バイナリファイル
-duckdns
+/duckdns
 *.exe
 *.dll
 *.so
