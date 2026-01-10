@@ -3,7 +3,13 @@
 package duckdns
 
 import (
+	"context"
+	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 )
 
@@ -77,4 +83,78 @@ func NewClientWithOptions(httpClient HTTPDoer, baseURL string, retry RetryConfig
 		baseURL:    baseURL,
 		retry:      retry,
 	}
+}
+
+// Update は DuckDNS API を呼び出してDNSレコードを更新します。
+// domain, token, ip を指定してGETリクエストを送信し、レスポンスボディを返します。
+//
+// Parameters:
+//   - ctx: キャンセルやタイムアウトを制御するコンテキスト
+//   - domain: 更新するDuckDNSドメイン名（例: "your-domain"）
+//   - token: DuckDNS APIの認証トークン
+//   - ip: 更新するIPアドレス（IPv4形式）
+//
+// Returns:
+//   - string: レスポンスボディ（"OK" または "KO"）
+//   - error: エラーが発生した場合
+func (c *Client) Update(ctx context.Context, domain, token, ip string) (string, error) {
+	// クエリパラメータの構築
+	params := url.Values{}
+	params.Set("domains", domain)
+	params.Set("token", token)
+	params.Set("ip", ip)
+
+	// URL構築
+	reqURL := c.baseURL + "?" + params.Encode()
+
+	slog.Info("DuckDNS更新リクエスト送信",
+		"domain", domain,
+		"ip", ip,
+		"url", c.baseURL,
+	)
+
+	// HTTPリクエスト作成
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("リクエスト作成に失敗しました: %w", err)
+	}
+
+	// User-Agent設定
+	req.Header.Set("User-Agent", "duckdns-updater/1.0")
+
+	// HTTPリクエスト送信
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		slog.Error("DuckDNS APIリクエスト失敗",
+			"domain", domain,
+			"error", err,
+		)
+		return "", fmt.Errorf("HTTPリクエスト実行に失敗しました: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// ステータスコード確認
+	if resp.StatusCode != http.StatusOK {
+		slog.Error("DuckDNS APIステータスエラー",
+			"domain", domain,
+			"status_code", resp.StatusCode,
+		)
+		return "", fmt.Errorf("HTTPステータスエラー: %d", resp.StatusCode)
+	}
+
+	// レスポンスボディ読み込み
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("レスポンス読み込みに失敗しました: %w", err)
+	}
+
+	// レスポンス文字列の取得（空白・改行を削除）
+	response := strings.TrimSpace(string(body))
+
+	slog.Info("DuckDNS APIレスポンス受信",
+		"domain", domain,
+		"response", response,
+	)
+
+	return response, nil
 }
