@@ -1,0 +1,164 @@
+# DuckDNS 自動更新プログラム - 設定ファイルサンプル
+#
+# このファイルを参考に、自分の環境に合わせて設定を編集してください。
+# 環境変数で上書きすることも可能です。
+# 詳細は、各項目のコメントを参照してください。
+
+# ========== DuckDNS 設定 ==========
+duckdns:
+  # domain: DuckDNS のドメイン名を指定します。
+  # 例: "my-server", "home-network" など
+  # https://www.duckdns.org でアカウントを作成し、ドメイン名を取得してください。
+  # 環境変数: DUCKDNS_DOMAIN で上書き可能
+  domain: "test.duckdns.org"
+
+  # token: DuckDNS API のトークンを指定します。
+  # https://www.duckdns.org でアカウント設定から取得できます。
+  # セキュリティ上の理由から、環境変数 DUCKDNS_TOKEN で指定することを強く推奨します。
+  # このファイルに記載する場合は、必ず .gitignore に config.yaml を追加してください。
+  # 環境変数: DUCKDNS_TOKEN で上書き可能
+  token: "testtoken123"
+
+# ========== 更新設定 ==========
+update:
+  # interval: IP アドレス変更チェックと DuckDNS 更新の実行間隔を指定します。
+  # フォーマット: Go の time.Duration 形式
+  # 例:
+  #   "5m"   -> 5分ごと（推奨）
+  #   "1h"   -> 1時間ごと
+  #   "30s"  -> 30秒ごと
+  #   "15m"  -> 15分ごと
+  # 環境変数: DUCKDNS_INTERVAL で上書き可能
+  interval: 5m
+
+# ========== グローバルIP取得ソース ==========
+ip_sources:
+  # グローバルIPアドレスを取得するためのエンドポイントを指定します。
+  # 複数指定した場合は、上から順に試行され、最初に成功したものを使用します。
+  # すべてのソースから取得できない場合は、エラーログが出力されます。
+  #
+  # 推奨されるIP取得サービス:
+  # - https://api.ipify.org           : シンプルで信頼性が高い
+  # - https://ifconfig.me/ip          : Unix/Linux系で広く使用
+  # - https://icanhazip.com           : 高速なレスポンス
+  # - https://checkip.amazonaws.com   : AWS が提供するサービス
+  #
+  - "https://api.ipify.org"
+  - "https://ifconfig.me/ip"
+  - "https://icanhazip.com"
+
+# ========== ログ設定 ==========
+log:
+  # level: ログ出力レベルを指定します。
+  # 有効な値:
+  #   "debug" -> デバッグ情報も含むすべてのログを出力（開発時推奨）
+  #   "info"  -> 情報ログを出力（本番環境推奨）
+  #   "warn"  -> 警告以上のログを出力
+  #   "error" -> エラーログのみ出力
+  # 環境変数: DUCKDNS_LOG_LEVEL で上書き可能
+  level: "info"
+
+  # format: ログ出力形式を指定します。
+  # 有効な値:
+  #   "text" -> テキスト形式（見やすい、ターミナル向け）
+  #   "json" -> JSON 形式（構造化、ログ分析ツール向け）
+  # 環境変数: DUCKDNS_LOG_FORMAT で上書き可能
+  format: "text"
+
+# ========== 使用例 ==========
+#
+# ■ 例1: 最小限の設定
+# duckdns:
+#   domain: "my-server"
+#   token: "my-token-abc123"
+# update:
+#   interval: 5m
+# ip_sources:
+#   - "https://api.ipify.org"
+# log:
+#   level: "info"
+#   format: "text"
+#
+# ■ 例2: より詳細なIP取得ソース設定（高信頼性）
+# duckdns:
+#   domain: "home-network"
+#   token: "my-token-xyz789"
+# update:
+#   interval: 10m
+# ip_sources:
+#   - "https://api.ipify.org"
+#   - "https://ifconfig.me/ip"
+#   - "https://icanhazip.com"
+#   - "https://checkip.amazonaws.com"
+# log:
+#   level: "info"
+#   format: "text"
+#
+# ■ 例3: デバッグモード（開発・トラブルシューティング時）
+# duckdns:
+#   domain: "dev-server"
+#   token: "my-token-dev123"
+# update:
+#   interval: 1m
+# ip_sources:
+#   - "https://api.ipify.org"
+#   - "https://ifconfig.me/ip"
+# log:
+#   level: "debug"
+#   format: "json"
+#
+# ■ 例4: 環境変数とファイルの組み合わせ
+# ファイル (config.yaml):
+# duckdns:
+#   domain: "my-server"
+# update:
+#   interval: 5m
+# ip_sources:
+#   - "https://api.ipify.org"
+#
+# コマンドラインで実行:
+# export DUCKDNS_TOKEN="my-secret-token"
+# ./duckdns -config config.yaml
+#
+# ========== セットアップ手順 ==========
+#
+# 1. このファイルを config.yaml にコピー
+#    $ cp config.yaml.example config.yaml
+#
+# 2. config.yaml を編集し、自分の設定に変更
+#    $ vi config.yaml
+#
+# 3. config.yaml をビルド時に指定して実行
+#    $ ./duckdns -config config.yaml
+#
+# または環境変数で指定:
+#    $ export DUCKDNS_DOMAIN="test.duckdns.org"
+#    $ export DUCKDNS_TOKEN="your-token"
+#    $ export DUCKDNS_INTERVAL="5m"
+#    $ ./duckdns
+#
+# ========== セキュリティに関する注意 ==========
+#
+# ■ トークン管理
+# - 本番環境では、必ず環境変数 DUCKDNS_TOKEN で指定してください
+# - config.yaml にトークンを記載する場合は、必ず .gitignore に追加してください
+# - トークンをGitリポジトリにコミットしないでください
+#
+# ■ ファイルパーミッション
+# - config.yaml のパーミッションを 600 または 400 に設定してください
+#   $ chmod 600 config.yaml
+#
+# ========== トラブルシューティング ==========
+#
+# Q: ログに「IP取得ソースから取得に失敗」が出る
+# A: IP取得サービスが一時的に利用できない可能性があります。
+#    複数の ip_sources を設定することをお勧めします。
+#
+# Q: DuckDNS の更新に失敗する
+# A: ドメイン名とトークンが正しいか確認してください。
+#    コマンドラインで以下を実行して確認できます:
+#    $ curl "https://www.duckdns.org/update?domains=test.duckdns.org&token=your-token&ip=x.x.x.x"
+#
+# Q: プログラムが起動しない
+# A: ロギングレベルを "debug" にして、ログメッセージを確認してください。
+#    $ ./duckdns -config config.yaml 2>&1 | grep -E "ERROR|error"
