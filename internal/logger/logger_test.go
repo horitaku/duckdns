@@ -14,7 +14,7 @@ func TestInitLogger_TextFormat(t *testing.T) {
 		t.Errorf("エラーが発生しました: %v", err)
 	}
 	output := buf.String()
-	if !strings.Contains(output, "ログシステムが初期化されたます") {
+	if !strings.Contains(output, "ログシステムが初期化されました") {
 		t.Errorf("初期化メッセージがログに含まれていません: %s", output)
 	}
 }
@@ -26,7 +26,7 @@ func TestInitLogger_JSONFormat(t *testing.T) {
 		t.Errorf("エラーが発生しました: %v", err)
 	}
 	output := buf.String()
-	if !strings.Contains(output, "ログシステムが初期化されたます") {
+	if !strings.Contains(output, "ログシステムが初期化されました") {
 		t.Errorf("初期化メッセージがログに含まれていません: %s", output)
 	}
 	if !strings.Contains(output, "{") || !strings.Contains(output, "}") {

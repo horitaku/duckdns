@@ -1,5 +1,5 @@
-// Package logger は、アプリケーションの構造化ログ管理を提供するます。
-// log/slog を使用して JSON またはテキスト形式でのログ出力に対応するますよ。
+// Package logger は、アプリケーションの構造化ログ管理を提供します。
+// log/slog を使用して JSON またはテキスト形式でのログ出力に対応します。
 package logger
 
 import (
@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// InitLogger は、指定されたログレベルとフォーマットでロガーを初期化するます。
+// InitLogger は、指定されたログレベルとフォーマットでロガーを初期化します。
 //
 // パラメータ:
 //   - level: ログレベル ("debug", "info", "warn", "error")
@@ -17,18 +17,18 @@ import (
 //   - writer: ログ出力先 (デフォルト: os.Stderr)
 //
 // 戻り値:
-//   - エラーが発生した場合は error を返すます
+//   - エラーが発生した場合は error を返します
 func InitLogger(level, format string, writer ...io.Writer) error {
-	// 出力先を決定するますよ
+	// 出力先を決定
 	var output io.Writer = os.Stderr
 	if len(writer) > 0 && writer[0] != nil {
 		output = writer[0]
 	}
 
-	// ログレベルを解析するますね
+	// ログレベルを解析
 	logLevel := parseLogLevel(level)
 
-	// ログハンドラーを作成するます
+	// ログハンドラーを作成
 	var handler slog.Handler
 
 	switch strings.ToLower(format) {
@@ -46,19 +46,19 @@ func InitLogger(level, format string, writer ...io.Writer) error {
 		})
 	default:
 		// 不正なフォーマット
-		slog.Error("不正なログフォーマットが指定されたます", "format", format)
-		// テキスト形式にフォールバックするますね
+		slog.Error("不正なログフォーマットが指定されました", "format", format)
+		// テキスト形式にフォールバック
 		handler = slog.NewTextHandler(output, &slog.HandlerOptions{
 			Level:     logLevel,
 			AddSource: true,
 		})
 	}
 
-	// デフォルトロガーを設定するます
+	// デフォルトロガーを設定
 	slog.SetDefault(slog.New(handler))
 
-	// 初期化完了をログするますよー
-	slog.Info("ログシステムが初期化されたます",
+	// 初期化完了をログ出力
+	slog.Info("ログシステムが初期化されました",
 		"level", level,
 		"format", format,
 	)
@@ -66,7 +66,7 @@ func InitLogger(level, format string, writer ...io.Writer) error {
 	return nil
 }
 
-// parseLogLevel は、文字列のログレベルを slog.Level に変換するます。
+// parseLogLevel は、文字列のログレベルを slog.Level に変換します。
 func parseLogLevel(level string) slog.Level {
 	switch strings.ToLower(level) {
 	case "debug":
@@ -83,7 +83,7 @@ func parseLogLevel(level string) slog.Level {
 	}
 }
 
-// GetLogger は、デフォルトロガーを取得するます。
+// GetLogger は、デフォルトロガーを取得します。
 func GetLogger() *slog.Logger {
 	return slog.Default()
 }
