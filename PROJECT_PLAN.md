@@ -320,56 +320,56 @@
 ## 🔧 フェーズ8: デプロイ関連ファイルの作成
 
 ### タスク8.1: systemd サービスファイルの作成
-- [ ] `deploy/duckdns.service` ファイル作成
-- [ ] Unit セクションの記載
-  - [ ] Description
-  - [ ] After (ネットワーク依存)
-  - [ ] Wants (ネットワーク依存)
-- [ ] Service セクションの記載
-  - [ ] Type=simple
-  - [ ] ExecStart
-  - [ ] Restart=always
-  - [ ] RestartSec
-- [ ] Install セクションの記載
-  - [ ] WantedBy=multi-user.target
+- [x] `deploy/duckdns.service` ファイル作成
+- [x] Unit セクションの記載
+  - [x] Description
+  - [x] After (ネットワーク依存)
+  - [x] Wants (ネットワーク依存)
+- [x] Service セクションの記載
+  - [x] Type=simple
+  - [x] ExecStart
+  - [x] Restart=always
+  - [x] RestartSec
+- [x] Install セクションの記載
+  - [x] WantedBy=multi-user.target
 
 **予定**: 未定  
-**実績**: 未完了  
+**実績**: 2026年1月11日 完了 ✅  
 **所要時間見積**: 30分
 
 ---
 
 ### タスク8.2: install.sh の作成
-- [ ] シェバン行の記載
-- [ ] エラー時の停止設定 (`set -e`)
-- [ ] ビルド処理
-- [ ] バイナリのコピー (`/usr/local/bin/`)
-- [ ] 設定ファイルのコピー (`/etc/duckdns/`)
-- [ ] サービスファイルのコピー
-- [ ] systemctl daemon-reload
-- [ ] systemctl enable
-- [ ] systemctl start
-- [ ] 成功メッセージ
+- [x] シェバン行の記載
+- [x] エラー時の停止設定 (`set -e`)
+- [x] ビルド処理
+- [x] バイナリのコピー (`/usr/local/bin/`)
+- [x] 設定ファイルのコピー (`/etc/duckdns/`)
+- [x] サービスファイルのコピー
+- [x] systemctl daemon-reload
+- [x] systemctl enable
+- [x] systemctl start
+- [x] 成功メッセージ
 
 **予定**: 未定  
-**実績**: 未完了  
+**実績**: 2026年1月11日 完了 ✅  
 **所要時間見積**: 40分
 
 ---
 
 ### タスク8.3: uninstall.sh の作成
-- [ ] シェバン行の記載
-- [ ] エラー時の停止設定
-- [ ] systemctl stop
-- [ ] systemctl disable
-- [ ] サービスファイルの削除
-- [ ] バイナリの削除
-- [ ] 設定ファイルの削除確認
-- [ ] systemctl daemon-reload
-- [ ] 成功メッセージ
+- [x] シェバン行の記載
+- [x] エラー時の停止設定
+- [x] systemctl stop
+- [x] systemctl disable
+- [x] サービスファイルの削除
+- [x] バイナリの削除
+- [x] 設定ファイルの削除確認
+- [x] systemctl daemon-reload
+- [x] 成功メッセージ
 
 **予定**: 未定  
-**実績**: 未完了  
+**実績**: 2026年1月11日 完了 ✅  
 **所要時間見積**: 30分
 
 ---
@@ -616,12 +616,12 @@
 | フェーズ5: スケジューラー | 4 | 4 | 100% | ✅ 完了 |
 | フェーズ6: メインプログラム | 4 | 4 | 100% | ✅ 完了 |
 | フェーズ7: 設定サンプル | 1 | 1 | 100% | ✅ 完了 |
-| フェーズ8: デプロイ | 3 | 0 | 0% | 未着手 |
+| フェーズ8: デプロイ | 3 | 3 | 100% | ✅ 完了 |
 | フェーズ9: テスト | 5 | 0 | 0% | 未着手 |
 | フェーズ10: ドキュメント | 2 | 0 | 0% | 未着手 |
 | フェーズ11: 最終確認 | 3 | 0 | 0% | 未着手 |
 | フェーズ12: CI/CD | 5 | 0 | 0% | 未着手 |
-| **合計** | **42** | **24** | **57.1%** | **進行中** |
+| **合計** | **42** | **27** | **64.3%** | **進行中** |
 
 ---
 
@@ -646,4 +646,4 @@
 
 ---
 
-**最終更新日**: 2026年1月10日
+**最終更新日**: 2026年1月11日
