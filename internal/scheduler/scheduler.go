@@ -113,8 +113,57 @@ func (s *Scheduler) Run(ctx context.Context) {
 
 // checkAndUpdate は、現在のIPアドレスを取得し、
 // 前回と異なる場合にDuckDNSを更新します（内部用ヘルパー関数）
+//
+// エラーが発生してもスケジューラーは継続して実行されます。
 func (s *Scheduler) checkAndUpdate(ctx context.Context) {
-	// TODO: タスク5.3で実装予定
-	// この関数は次のタスクで実装します
-	slog.Debug("checkAndUpdate を実行します（未実装）")
+	slog.Debug("IP アドレスのチェックを開始します")
+
+	// 1. 現在のIPアドレスを取得
+	currentIP, err := s.ipFetcher.Fetch(ctx)
+	if err != nil {
+		// IP取得失敗: エラーログを出力して継続
+		slog.Error("IP アドレスの取得に失敗しました",
+			"error", err,
+		)
+		return
+	}
+
+	slog.Debug("現在の IP アドレスを取得しました",
+		"ip", currentIP,
+	)
+
+	// 2. 前回のIPアドレスと比較
+	if s.lastIP == currentIP {
+		// IPアドレスに変更なし: スキップ
+		slog.Info("IP アドレスに変更はありません",
+			"ip", currentIP,
+		)
+		return
+	}
+
+	// 3. IPアドレスが変更された場合: DuckDNSを更新
+	slog.Info("IP アドレスの変更を検知しました",
+		"old_ip", s.lastIP,
+		"new_ip", currentIP,
+		"domain", s.domain,
+	)
+
+	// DuckDNSを更新
+	_, err = s.duckDNSClient.Update(ctx, s.domain, s.token, currentIP)
+	if err != nil {
+		// 更新失敗: エラーログを出力して継続
+		slog.Error("DuckDNS の更新に失敗しました",
+			"error", err,
+			"domain", s.domain,
+			"ip", currentIP,
+		)
+		return
+	}
+
+	// 4. 更新成功: lastIP を更新
+	s.lastIP = currentIP
+	slog.Info("DuckDNS の更新に成功しました",
+		"domain", s.domain,
+		"ip", currentIP,
+	)
 }
