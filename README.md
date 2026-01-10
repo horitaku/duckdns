@@ -2,6 +2,10 @@
 
 [![Go Version](https://img.shields.io/badge/Go-1.21%2B-blue.svg)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Test](https://github.com/horitaku/duckdns/actions/workflows/test.yml/badge.svg)](https://github.com/horitaku/duckdns/actions/workflows/test.yml)
+[![Release](https://github.com/horitaku/duckdns/actions/workflows/release.yml/badge.svg)](https://github.com/horitaku/duckdns/actions/workflows/release.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/horitaku/duckdns)](https://goreportcard.com/report/github.com/horitaku/duckdns)
+[![codecov](https://codecov.io/gh/horitaku/duckdns/branch/main/graph/badge.svg)](https://codecov.io/gh/horitaku/duckdns)
 
 DuckDNS の DNS レコードを自動的に更新する Go 言語製のプログラムです。定期的にグローバル IP アドレスを取得し、IP アドレスが変更された場合に自動的に DuckDNS を更新します。
 
