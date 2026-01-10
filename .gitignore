@@ -1,0 +1,44 @@
+# バイナリファイル
+duckdns
+*.exe
+*.dll
+*.so
+*.dylib
+
+# テスト関連
+*.test
+*.out
+coverage.txt
+coverage.html
+
+# 依存関係
+vendor/
+
+# 設定ファイル（サンプル以外）
+config.yaml
+*.local.yaml
+
+# IDE / エディタ
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ビルド成果物
+dist/
+build/
+*.log
+
+# 環境変数ファイル
+.env
+.env.local
+
+# デバッグ
+debug
+__debug_bin
+
+# GoReleaser
+.goreleaser.yaml.bak
