@@ -151,10 +151,124 @@ func (c *Client) Update(ctx context.Context, domain, token, ip string) (string, 
 	// レスポンス文字列の取得（空白・改行を削除）
 	response := strings.TrimSpace(string(body))
 
-	slog.Info("DuckDNS APIレスポンス受信",
+	// レスポンス解析："OK" / "KO" の判定
+	if response == "OK" {
+		slog.Info("DuckDNS更新成功",
+			"domain", domain,
+			"ip", ip,
+			"response", response,
+		)
+		return response, nil
+	}
+
+	// "KO" またはその他の予期しないレスポンス
+	slog.Error("DuckDNS更新失敗",
 		"domain", domain,
+		"ip", ip,
 		"response", response,
 	)
+	return response, fmt.Errorf("DuckDNS更新に失敗しました: レスポンス=%s", response)
+}
 
-	return response, nil
+// UpdateWithRetry は指数バックオフアルゴリズムでリトライしながら
+// DuckDNS API を呼び出してDNSレコードを更新します。
+// 最大リトライ回数と各リトライ間のバックオフ時間は Client の retry 設定に従います。
+//
+// Parameters:
+//   - ctx: キャンセルやタイムアウトを制御するコンテキスト
+//   - domain: 更新するDuckDNSドメイン名（例: "your-domain"）
+//   - token: DuckDNS APIの認証トークン
+//   - ip: 更新するIPアドレス（IPv4形式）
+//
+// Returns:
+//   - string: レスポンスボディ（"OK" または "KO"）
+//   - error: すべてのリトライが失敗した場合
+func (c *Client) UpdateWithRetry(ctx context.Context, domain, token, ip string) (string, error) {
+	var lastErr error
+	maxAttempts := c.retry.MaxRetries + 1 // 最初の試行 + リトライ回数
+
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		// コンテキストがキャンセルされているか確認
+		select {
+		case <-ctx.Done():
+			slog.Warn("DuckDNS更新がキャンセルされました",
+				"domain", domain,
+				"attempt", attempt,
+				"error", ctx.Err(),
+			)
+			return "", fmt.Errorf("更新がキャンセルされました: %w", ctx.Err())
+		default:
+		}
+
+		// 試行開始ログ
+		if attempt == 1 {
+			slog.Info("DuckDNS更新を開始",
+				"domain", domain,
+				"ip", ip,
+				"max_retries", c.retry.MaxRetries,
+			)
+		} else {
+			slog.Info("DuckDNS更新をリトライ",
+				"domain", domain,
+				"ip", ip,
+				"attempt", attempt,
+				"max_attempts", maxAttempts,
+			)
+		}
+
+		// 更新を試行
+		response, err := c.Update(ctx, domain, token, ip)
+		if err == nil {
+			// 成功
+			if attempt > 1 {
+				slog.Info("DuckDNS更新がリトライで成功",
+					"domain", domain,
+					"ip", ip,
+					"attempt", attempt,
+				)
+			}
+			return response, nil
+		}
+
+		// エラーを記録
+		lastErr = err
+
+		// 最後の試行でない場合はバックオフ
+		if attempt < maxAttempts {
+			// バックオフ時間を取得（範囲外の場合は最後の値を使用）
+			backoffIndex := attempt - 1
+			if backoffIndex >= len(c.retry.Backoff) {
+				backoffIndex = len(c.retry.Backoff) - 1
+			}
+			backoffDuration := c.retry.Backoff[backoffIndex]
+
+			slog.Warn("DuckDNS更新が失敗、バックオフ後にリトライ",
+				"domain", domain,
+				"attempt", attempt,
+				"backoff", backoffDuration.String(),
+				"error", err,
+			)
+
+			// バックオフ待機（contextのキャンセルも監視）
+			select {
+			case <-time.After(backoffDuration):
+				// バックオフ完了、次の試行へ
+			case <-ctx.Done():
+				slog.Warn("バックオフ中にキャンセルされました",
+					"domain", domain,
+					"error", ctx.Err(),
+				)
+				return "", fmt.Errorf("バックオフ中にキャンセルされました: %w", ctx.Err())
+			}
+		}
+	}
+
+	// すべての試行が失敗
+	slog.Error("DuckDNS更新の全リトライが失敗",
+		"domain", domain,
+		"ip", ip,
+		"attempts", maxAttempts,
+		"last_error", lastErr,
+	)
+	return "", fmt.Errorf("DuckDNS更新に失敗しました（%d回試行）: %w", maxAttempts, lastErr)
 }
