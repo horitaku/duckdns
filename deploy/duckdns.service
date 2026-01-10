@@ -1,0 +1,165 @@
+[Unit]
+# Description: DuckDNS 自動更新サービス
+# このサービスは、定期的にグローバルIPアドレスを取得し、
+# DuckDNSのDNSレコードを自動的に更新するます。
+Description=DuckDNS Auto Update Service
+
+# Documentation: サービスのドキュメンテーション
+Documentation=https://github.com/horitaku/duckdns
+
+# After: このユニットが起動する前に起動されるべきユニット
+# network-online.target: ネットワークが完全に起動した後に開始することを指定するます
+After=network-online.target
+
+# Wants: 依存関係を指定します（失敗しても続行）
+# network-online.target に依存して、ネットワーク接続を確保するますね
+Wants=network-online.target
+
+[Service]
+# Type: サービスのタイプを指定するます
+# simple: ExecStart で指定されたプロセスがメインプロセスとなるます
+Type=simple
+
+# User: このサービスを実行するユーザーを指定するます
+# root で実行する場合は、セキュリティに注意してください
+# 推奨: 専用ユーザー (例: duckdns) を作成して実行するますね
+# User=duckdns
+# Group=duckdns
+
+# ExecStart: サービスを開始するコマンド
+# /usr/local/bin/duckdns: ビルドされたバイナリのパス
+# -config /etc/duckdns/config.yaml: 設定ファイルのパスを指定するます
+ExecStart=/usr/local/bin/duckdns -config /etc/duckdns/config.yaml
+
+# Restart: プロセス終了時の再起動ポリシー
+# always: 終了コード、シグナルに関わらず常に再起動するますね
+Restart=always
+
+# RestartSec: 再起動までの待機時間（秒）
+# 短すぎると、ネットワーク一時障害時に頻繁に再起動されるため、
+# 10秒推奨するます。適宜調整してください。
+RestartSec=10
+
+# StandardOutput: 標準出力の出力先を指定するます
+# journal: systemd journal に出力するます（推奨）
+StandardOutput=journal
+
+# StandardError: 標準エラー出力の出力先を指定するます
+# journal: systemd journal に出力するますね
+StandardError=journal
+
+# SyslogIdentifier: journalctl で検索するときのID
+# このサービスのログを容易に検索できるようにするます
+SyslogIdentifier=duckdns
+
+# Environment: サービスの環境変数を指定するます
+# 設定ファイルの代わりに環境変数で設定する場合は、ここで指定するますね
+# Environment="DUCKDNS_LOG_LEVEL=info"
+# Environment="DUCKDNS_LOG_FORMAT=text"
+
+# WorkingDirectory: ワーキングディレクトリを指定するます
+# ログファイルやテンポラリファイルが必要な場合は設定してください
+WorkingDirectory=/var/lib/duckdns
+
+# SuccessExitStatus: 成功と判定する終了コード
+# デフォルト: 0, 1 が定義されるます
+SuccessExitStatus=0
+
+[Install]
+# WantedBy: systemctl enable した際の依存関係を指定するます
+# multi-user.target: マルチユーザーモードで起動するます
+# これはシステムの通常の起動時に、このサービスも起動されることを意味するますね
+WantedBy=multi-user.target
+
+# ========== 使用方法 ==========
+#
+# ■ インストール手順
+# 1. このファイルを /etc/systemd/system/ にコピー
+#    $ sudo cp deploy/duckdns.service /etc/systemd/system/duckdns.service
+#
+# 2. systemd のデーモンをリロード
+#    $ sudo systemctl daemon-reload
+#
+# 3. サービスを有効化（自動起動設定）
+#    $ sudo systemctl enable duckdns.service
+#
+# 4. サービスを開始
+#    $ sudo systemctl start duckdns.service
+#
+# ■ 日常的なコマンド
+#
+# サービスのステータス確認:
+#    $ sudo systemctl status duckdns.service
+#
+# サービスのログを確認:
+#    $ sudo journalctl -u duckdns.service -f
+#
+# サービスを停止:
+#    $ sudo systemctl stop duckdns.service
+#
+# サービスを再起動:
+#    $ sudo systemctl restart duckdns.service
+#
+# サービスを無効化（自動起動解除）:
+#    $ sudo systemctl disable duckdns.service
+#
+# サービスをアンインストール:
+#    $ sudo systemctl disable duckdns.service
+#    $ sudo systemctl stop duckdns.service
+#    $ sudo rm /etc/systemd/system/duckdns.service
+#    $ sudo systemctl daemon-reload
+#
+# ========== ログ確認方法 ==========
+#
+# リアルタイムでログを確認:
+#    $ sudo journalctl -u duckdns.service -f
+#
+# 直近 50 行のログを確認:
+#    $ sudo journalctl -u duckdns.service -n 50
+#
+# 特定の時間以降のログを確認:
+#    $ sudo journalctl -u duckdns.service --since "2026-01-11 00:00:00"
+#
+# エラーのみを確認:
+#    $ sudo journalctl -u duckdns.service -p err
+#
+# ========== セキュリティに関する注意 ==========
+#
+# ■ 専用ユーザーでの実行
+# セキュリティ上、root で実行するよりも専用ユーザーで実行することを推奨するます。
+#
+# 専用ユーザーを作成:
+#    $ sudo useradd -r -s /bin/false duckdns
+#
+# サービスファイルのコメントアウトを解除:
+#    # User=duckdns
+#    # Group=duckdns
+#
+# 設定ファイルと必要なディレクトリの権限を設定:
+#    $ sudo chown duckdns:duckdns /etc/duckdns/config.yaml
+#    $ sudo chmod 600 /etc/duckdns/config.yaml
+#    $ sudo mkdir -p /var/lib/duckdns
+#    $ sudo chown duckdns:duckdns /var/lib/duckdns
+#    $ sudo chmod 700 /var/lib/duckdns
+#
+# ========== トラブルシューティング ==========
+#
+# Q: サービスが起動しない
+# A: ログを確認してください。
+#    $ sudo journalctl -u duckdns.service -n 50
+#
+# Q: 設定ファイルが見つからないというエラー
+# A: 設定ファイルが正しいパスに存在するか確認してください。
+#    $ sudo ls -la /etc/duckdns/config.yaml
+#
+# Q: サービスが頻繁に再起動される
+# A: ログで理由を確認し、以下を検証してください：
+#    - 設定ファイルの構文が正しいか
+#    - DuckDNS トークンが有効か
+#    - ネットワーク接続が正常か
+#    - IP 取得ソースが利用可能か
+#
+# Q: ネットワーク起動前にサービスが起動しようとする
+# A: このファイルの After= と Wants= が
+#    network-online.target に設定されていることを確認してください。
+#
