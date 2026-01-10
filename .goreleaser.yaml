@@ -1,0 +1,189 @@
+# GoReleaser 設定ファイル
+# https://goreleaser.com/
+
+# プロジェクト情報
+project_name: duckdns
+
+# 環境変数の設定
+env:
+  - CGO_ENABLED=0
+
+# ビルド前の処理
+before:
+  hooks:
+    # 依存関係の整理
+    - go mod tidy
+    # テストの実行
+    - go test ./...
+
+# ビルド設定
+builds:
+  - id: duckdns
+    # メインパッケージのパス
+    main: ./cmd/duckdns
+    # バイナリ名
+    binary: duckdns
+    
+    # ビルドフラグ
+    flags:
+      - -trimpath
+    
+    # リンカーフラグ（バージョン情報の埋め込み）
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+    
+    # 対象プラットフォーム
+    goos:
+      - linux
+      - darwin
+      - windows
+    
+    # 対象アーキテクチャ
+    goarch:
+      - amd64
+      - arm64
+      - arm
+    
+    # ARM バージョン
+    goarm:
+      - "6"
+      - "7"
+    
+    # 除外する組み合わせ
+    ignore:
+      - goos: darwin
+        goarch: arm
+      - goos: windows
+        goarch: arm
+      - goos: windows
+        goarch: arm64
+
+# アーカイブ設定
+archives:
+  - id: default
+    # アーカイブ名のフォーマット
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    
+    # アーカイブフォーマット（OS別）
+    format_overrides:
+      - goos: windows
+        format: zip
+    
+    # アーカイブに含めるファイル
+    files:
+      - LICENSE*
+      - README.md
+      - CHANGELOG.md
+      - config.yaml.example
+      - deploy/*
+
+# チェックサム生成
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+# スナップショット設定（タグなしビルド用）
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+# 変更履歴の生成設定
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^build:'
+      - '^chore:'
+      - typo
+      - Merge pull request
+      - Merge branch
+  groups:
+    - title: '✨ 新機能'
+      regexp: '^feat:'
+      order: 0
+    - title: '🐛 バグ修正'
+      regexp: '^fix:'
+      order: 1
+    - title: '🔧 改善'
+      regexp: '^refactor:|^perf:'
+      order: 2
+    - title: '📚 ドキュメント'
+      regexp: '^docs:'
+      order: 3
+    - title: 'その他の変更'
+      order: 999
+
+# GitHub Releases 設定
+release:
+  github:
+    owner: horitaku
+    name: duckdns
+  
+  # リリースノート設定
+  draft: false
+  prerelease: auto
+  mode: replace
+  
+  # ヘッダーとフッター
+  header: |
+    ## DuckDNS 自動更新プログラム {{ .Tag }}
+    
+    このリリースには、以下のバイナリが含まれています：
+    
+  footer: |
+    ---
+    
+    **完全な変更履歴**: https://github.com/horitaku/duckdns/blob/main/CHANGELOG.md
+    
+    ### インストール方法
+    
+    1. お使いのOS/アーキテクチャに対応したバイナリをダウンロード
+    2. 解凍して実行権限を付与: `chmod +x duckdns`
+    3. 設定ファイルを作成: `cp config.yaml.example config.yaml`
+    4. 設定を編集して実行: `./duckdns -config config.yaml`
+    
+    詳細は [README.md](https://github.com/horitaku/duckdns/blob/main/README.md) を参照してください。
+
+# Homebrew Tap 設定（将来的に使用可能）
+# brews:
+#   - name: duckdns
+#     repository:
+#       owner: horitaku
+#       name: homebrew-tap
+#     folder: Formula
+#     homepage: https://github.com/horitaku/duckdns
+#     description: "DuckDNS 自動更新プログラム"
+#     license: MIT
+
+# Docker イメージ設定（将来的に使用可能）
+# dockers:
+#   - image_templates:
+#       - "horitaku/duckdns:{{ .Tag }}"
+#       - "horitaku/duckdns:latest"
+#     dockerfile: Dockerfile
+#     build_flag_templates:
+#       - "--pull"
+#       - "--label=org.opencontainers.image.created={{.Date}}"
+#       - "--label=org.opencontainers.image.title={{.ProjectName}}"
+#       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+#       - "--label=org.opencontainers.image.version={{.Version}}"
+
+# 通知設定（オプション）
+# announce:
+#   twitter:
+#     enabled: false
+#   discord:
+#     enabled: false
