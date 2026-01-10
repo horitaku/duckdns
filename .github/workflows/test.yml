@@ -43,7 +43,13 @@ jobs:
         run: go mod verify
       
       - name: Run tests
-        run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+          else
+            go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+          fi
+        shell: bash
       
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.23'
@@ -57,14 +63,16 @@ jobs:
       - name: Check coverage threshold (Ubuntu only)
         if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.23'
         run: |
-          COVERAGE=$(go tool cover -func=coverage.txt | grep total | awk '{print $3}' | sed 's/%//')
+          COVERAGE=$(go tool cover -func=coverage.txt | awk '/total:/{print $3}' | sed 's/%//')
           echo "Total coverage: ${COVERAGE}%"
-          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "❌ Coverage ${COVERAGE}% is below threshold 80%"
+          THRESHOLD=80
+          if (( $(echo "$COVERAGE < $THRESHOLD" | awk '{print ($1 < $2)}') )); then
+            echo "❌ Coverage ${COVERAGE}% is below threshold ${THRESHOLD}%"
             exit 1
           else
             echo "✅ Coverage ${COVERAGE}% meets threshold"
           fi
+        shell: bash
 
   lint:
     name: Lint
