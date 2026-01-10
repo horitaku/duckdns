@@ -2,7 +2,6 @@ package scheduler
 
 import (
 	"context"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -14,7 +13,6 @@ import (
 type MockFetcher struct {
 	FetchFunc  func(ctx context.Context) (string, error)
 	FetchCount int32
-	mu         sync.Mutex
 }
 
 // Fetch は MockFetcher の Fetch メソッドを実装します。

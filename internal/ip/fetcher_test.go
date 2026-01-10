@@ -111,7 +111,9 @@ func TestHTTPFetcher_Fetch_Success(t *testing.T) {
 	// モックサーバーを作成
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("192.168.1.1"))
+		if _, err := w.Write([]byte("192.168.1.1")); err != nil {
+			t.Logf("failed to write response: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -131,7 +133,9 @@ func TestHTTPFetcher_Fetch_Success(t *testing.T) {
 func TestHTTPFetcher_Fetch_WithWhitespace(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("  \n192.168.1.1\t\n  "))
+		if _, err := w.Write([]byte("  \n192.168.1.1\t\n  ")); err != nil {
+			t.Logf("failed to write response: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -151,7 +155,9 @@ func TestHTTPFetcher_Fetch_WithWhitespace(t *testing.T) {
 func TestHTTPFetcher_Fetch_InvalidIP(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("not-an-ip"))
+		if _, err := w.Write([]byte("not-an-ip")); err != nil {
+			t.Logf("failed to write response: %v", err)
+		}
 	}))
 	defer server.Close()
 
