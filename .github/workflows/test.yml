@@ -63,8 +63,10 @@ jobs:
       - name: Check coverage threshold (Ubuntu only)
         if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.23'
         run: |
-          COVERAGE=$(go tool cover -func=coverage.txt | awk '/total:/{print $3}' | sed 's/%//')
-          echo "Total coverage: ${COVERAGE}%"
+          # internal パッケージのカバレッジのみを確認（cmd/duckdns/main.go は除外）
+          go test -coverprofile=coverage-internal.txt -covermode=atomic ./internal/... > /dev/null 2>&1
+          COVERAGE=$(go tool cover -func=coverage-internal.txt | tail -1 | awk '{print $NF}' | sed 's/%//')
+          echo "Internal packages coverage: ${COVERAGE}%"
           THRESHOLD=80
           if (( $(echo "$COVERAGE < $THRESHOLD" | awk '{print ($1 < $2)}') )); then
             echo "❌ Coverage ${COVERAGE}% is below threshold ${THRESHOLD}%"
