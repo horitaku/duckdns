@@ -173,7 +173,7 @@ func TestHTTPFetcher_Fetch_InvalidIP(t *testing.T) {
 func TestHTTPFetcher_Fetch_EmptyResponse(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(""))
+		_, _ = w.Write([]byte(""))
 	}))
 	defer server.Close()
 
@@ -219,7 +219,7 @@ func TestHTTPFetcher_Fetch_Timeout(t *testing.T) {
 		// タイムアウトより長い時間待機
 		time.Sleep(2 * time.Second)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("192.168.1.1"))
+		_, _ = w.Write([]byte("192.168.1.1"))
 	}))
 	defer server.Close()
 
@@ -237,7 +237,7 @@ func TestHTTPFetcher_Fetch_ContextCancelled(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(1 * time.Second)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("192.168.1.1"))
+		_, _ = w.Write([]byte("192.168.1.1"))
 	}))
 	defer server.Close()
 
