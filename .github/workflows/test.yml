@@ -68,7 +68,7 @@ jobs:
           COVERAGE=$(go tool cover -func=coverage-internal.txt | tail -1 | awk '{print $NF}' | sed 's/%//')
           echo "Internal packages coverage: ${COVERAGE}%"
           THRESHOLD=80
-          if (( $(echo "$COVERAGE < $THRESHOLD" | awk '{print ($1 < $2)}') )); then
+          if (( $(echo "$COVERAGE < $THRESHOLD" | bc) )); then
             echo "❌ Coverage ${COVERAGE}% is below threshold ${THRESHOLD}%"
             exit 1
           else
