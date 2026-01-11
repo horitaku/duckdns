@@ -88,7 +88,9 @@ func TestClient_Update_Success(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		if _, err := w.Write([]byte("OK")); err != nil {
+			t.Errorf("w.Write failed: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -108,7 +110,9 @@ func TestClient_Update_Success(t *testing.T) {
 func TestClient_Update_Failure(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("KO"))
+		if _, err := w.Write([]byte("KO")); err != nil {
+			t.Errorf("w.Write failed: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -140,7 +144,9 @@ func TestClient_Update_ContextCancelled(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(1 * time.Second)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		if _, err := w.Write([]byte("OK")); err != nil {
+			t.Errorf("w.Write failed: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -159,7 +165,9 @@ func TestClient_Update_ContextCancelled(t *testing.T) {
 func TestClient_Update_WithWhitespace(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("  \nOK\t\n  "))
+		if _, err := w.Write([]byte("  \nOK\t\n  ")); err != nil {
+			t.Errorf("w.Write failed: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -181,7 +189,9 @@ func TestClient_UpdateWithRetry_Success(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		attemptCount++
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		if _, err := w.Write([]byte("OK")); err != nil {
+			t.Errorf("w.Write failed: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -214,7 +224,9 @@ func TestClient_UpdateWithRetry_SuccessAfterRetry(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("OK"))
+			if _, err := w.Write([]byte("OK")); err != nil {
+				t.Errorf("w.Write failed: %v", err)
+			}
 		}
 	}))
 	defer server.Close()
@@ -307,7 +319,9 @@ func TestClient_UpdateWithRetry_BackoffWait(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("OK"))
+			if _, err := w.Write([]byte("OK")); err != nil {
+				t.Errorf("w.Write failed: %v", err)
+			}
 		}
 	}))
 	defer server.Close()
@@ -340,7 +354,9 @@ func TestClient_Update_UserAgent(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		receivedAgent = r.Header.Get("User-Agent")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		if _, err := w.Write([]byte("OK")); err != nil {
+			t.Errorf("w.Write failed: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -366,7 +382,9 @@ func TestClient_UpdateWithRetry_RecoveryMessage(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("OK"))
+			if _, err := w.Write([]byte("OK")); err != nil {
+				t.Errorf("w.Write failed: %v", err)
+			}
 		}
 	}))
 	defer server.Close()

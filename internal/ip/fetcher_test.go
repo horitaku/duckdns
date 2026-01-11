@@ -284,7 +284,9 @@ func TestNewMultipleFetcherWithTimeout(t *testing.T) {
 func TestMultipleFetcher_Fetch_FirstSuccess(t *testing.T) {
 	server1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("192.168.1.1"))
+		if _, err := w.Write([]byte("192.168.1.1")); err != nil {
+			t.Errorf("w.Write failed: %v", err)
+		}
 	}))
 	defer server1.Close()
 
@@ -314,7 +316,9 @@ func TestMultipleFetcher_Fetch_SecondSuccess(t *testing.T) {
 
 	server2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("10.0.0.1"))
+		if _, err := w.Write([]byte("10.0.0.1")); err != nil {
+			t.Errorf("w.Write failed: %v", err)
+		}
 	}))
 	defer server2.Close()
 
@@ -364,7 +368,9 @@ func TestMultipleFetcher_Fetch_NoURLs(t *testing.T) {
 func TestMultipleFetcher_Fetch_EmptyURL(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("172.16.0.1"))
+		if _, err := w.Write([]byte("172.16.0.1")); err != nil {
+			t.Errorf("w.Write failed: %v", err)
+		}
 	}))
 	defer server.Close()
 
@@ -386,14 +392,18 @@ func TestMultipleFetcher_Fetch_ContextTimeout(t *testing.T) {
 	server1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(2 * time.Second)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("192.168.1.1"))
+		if _, err := w.Write([]byte("192.168.1.1")); err != nil {
+			t.Errorf("w.Write failed: %v", err)
+		}
 	}))
 	defer server1.Close()
 
 	server2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(2 * time.Second)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("10.0.0.1"))
+		if _, err := w.Write([]byte("10.0.0.1")); err != nil {
+			t.Errorf("w.Write failed: %v", err)
+		}
 	}))
 	defer server2.Close()
 
@@ -415,7 +425,9 @@ func TestHTTPFetcher_UserAgent(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		receivedAgent = r.Header.Get("User-Agent")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("192.168.1.1"))
+		if _, err := w.Write([]byte("192.168.1.1")); err != nil {
+			t.Errorf("w.Write failed: %v", err)
+		}
 	}))
 	defer server.Close()
 
